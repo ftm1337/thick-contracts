@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity >=0.5.0;
+pragma solidity 0.7.6;
 
 /// @title The interface for the Uniswap V3 Factory
 /// @notice The Uniswap V3 Factory facilitates creation of Uniswap V3 pools and control over the protocol fees
@@ -51,6 +51,20 @@ interface IUniswapV3Factory {
         uint24 fee
     ) external view returns (address pool);
 
+    /// @notice Returns the pool address at input index, or address 0 if it does not exist
+    /// @param index The chronological serial number of a Thick Pool
+    /// @return pool The pool address
+    function allPairs(uint index) external view returns(address pool);
+/*
+    /// @notice Returns the total number of Thick Liquidity pools in existence
+    /// @return pools The pool address
+    function allPairsLength() external view returns(uint pools);
+*/
+    /// @notice Gets the initialization code hash of a Thick Pool
+    /// @dev Should be keccak256 of a Thick Pool's creationCode
+    /// @return hash The default Protocol Fees denominator
+    function POOL_INIT_CODE_HASH() external view returns (bytes32 hash);
+
     /// @notice Creates a pool for the given two tokens and fee
     /// @param tokenA One of the two tokens in the desired pool
     /// @param tokenB The other of the two tokens in the desired pool
@@ -75,4 +89,15 @@ interface IUniswapV3Factory {
     /// @param fee The fee amount to enable, denominated in hundredths of a bip (i.e. 1e-6)
     /// @param tickSpacing The spacing between ticks to be enforced for all pools created with the given fee amount
     function enableFeeAmount(uint24 fee, int24 tickSpacing) external;
+
+    /// @notice Read the default feeProtocol
+    /// @dev Protocol Fees = Trade Fees / feeProtocol
+    /// @return fee The default Protocol Fees denominator
+    function feeProtocol() external view returns (uint8 fee);
+
+    /// @notice Sets the default feeProtocol
+    /// @dev Should be 0-255.
+    /// @param fee The default Protocol Fees denominator
+    function setFeeProtocol(uint8 fee) external;
+
 }

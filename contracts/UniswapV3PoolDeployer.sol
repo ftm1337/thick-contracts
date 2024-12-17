@@ -1,5 +1,40 @@
-// SPDX-License-Identifier: BUSL-1.1
-pragma solidity =0.7.6;
+/*
+
+
+FFFFF  TTTTTTT  M   M         GGGGG  U    U  RRRRR     U    U
+FF       TTT   M M M M       G       U    U  RR   R    U    U
+FFFFF    TTT   M  M  M      G  GGG   U    U  RRRRR     U    U
+FF       TTT   M  M  M   O  G    G   U    U  RR R      U    U
+FF       TTT   M     M       GGGGG    UUUU   RR  RRR    UUUU
+
+						Contact us at:
+			https://discord.com/invite/QpyfMarNrV
+					https://t.me/FTM1337
+
+
+	Community Mediums:
+		https://medium.com/@ftm1337
+		https://twitter.com/ftm1337
+
+
+
+
+    ▀█▀░█░█░█░█▀░█▄▀
+    ░█░░█▀█░█░█▄░█▀▄
+
+	Thick Liquidity Protocol
+	> Network agnostic Decentralized Exchange for ERC20 tokens
+
+
+   Contributors:
+    -   543#3017 (Sam, @i543), ftm.guru, Eliteness.network
+
+
+  SPDX-License-Identifier: UNLICENSED
+
+*/
+
+pragma solidity 0.7.6;
 
 import './interfaces/IUniswapV3PoolDeployer.sol';
 
@@ -33,6 +68,7 @@ contract UniswapV3PoolDeployer is IUniswapV3PoolDeployer {
     ) internal returns (address pool) {
         parameters = Parameters({factory: factory, token0: token0, token1: token1, fee: fee, tickSpacing: tickSpacing});
         pool = address(new UniswapV3Pool{salt: keccak256(abi.encode(token0, token1, fee))}());
+        // transient storage (write & flush in a flash) doesnt cost much gas
         delete parameters;
     }
 }

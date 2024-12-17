@@ -1,5 +1,40 @@
-// SPDX-License-Identifier: BUSL-1.1
-pragma solidity =0.7.6;
+/*
+
+
+FFFFF  TTTTTTT  M   M         GGGGG  U    U  RRRRR     U    U
+FF       TTT   M M M M       G       U    U  RR   R    U    U
+FFFFF    TTT   M  M  M      G  GGG   U    U  RRRRR     U    U
+FF       TTT   M  M  M   O  G    G   U    U  RR R      U    U
+FF       TTT   M     M       GGGGG    UUUU   RR  RRR    UUUU
+
+						Contact us at:
+			https://discord.com/invite/QpyfMarNrV
+					https://t.me/FTM1337
+
+
+	Community Mediums:
+		https://medium.com/@ftm1337
+		https://twitter.com/ftm1337
+
+
+
+
+    ▀█▀░█░█░█░█▀░█▄▀
+    ░█░░█▀█░█░█▄░█▀▄
+
+	Thick Liquidity Protocol
+	> Network agnostic Decentralized Exchange for ERC20 tokens
+
+
+   Contributors:
+    -   543#3017 (Sam, @i543), ftm.guru, Eliteness.network
+
+
+  SPDX-License-Identifier: UNLICENSED
+
+*/
+
+pragma solidity 0.7.6;
 
 import './interfaces/IUniswapV3Pool.sol';
 
@@ -23,6 +58,7 @@ import './libraries/SwapMath.sol';
 import './interfaces/IUniswapV3PoolDeployer.sol';
 import './interfaces/IUniswapV3Factory.sol';
 import './interfaces/IERC20Minimal.sol';
+import './interfaces/IERC20Metadata.sol';
 import './interfaces/callback/IUniswapV3MintCallback.sol';
 import './interfaces/callback/IUniswapV3SwapCallback.sol';
 import './interfaces/callback/IUniswapV3FlashCallback.sol';
@@ -102,7 +138,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     /// to a function before the pool is initialized. The reentrancy guard is required throughout the contract because
     /// we use balance checks to determine the payment status of interactions such as mint, swap and flash.
     modifier lock() {
-        require(slot0.unlocked, 'LOK');
+        require(slot0.unlocked, 'A');
         slot0.unlocked = false;
         _;
         slot0.unlocked = true;
@@ -124,15 +160,54 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
     /// @dev Common checks for valid tick inputs.
     function checkTicks(int24 tickLower, int24 tickUpper) private pure {
-        require(tickLower < tickUpper, 'TLU');
-        require(tickLower >= TickMath.MIN_TICK, 'TLM');
-        require(tickUpper <= TickMath.MAX_TICK, 'TUM');
+        require(tickLower < tickUpper, 'B');
+        require(tickLower >= TickMath.MIN_TICK, 'C');
+        require(tickUpper <= TickMath.MAX_TICK, 'D');
     }
 
     /// @dev Returns the block timestamp truncated to 32 bits, i.e. mod 2**32. This method is overridden in tests.
     function _blockTimestamp() internal view virtual returns (uint32) {
         return uint32(block.timestamp); // truncation is desired
     }
+
+/*
+    /// @dev Get the  current price of token0 in terms of token1 in 18-digit precision
+    function totalSupply() public view returns (uint256) {
+        uint256 _cp = slot0.sqrtPriceX96;
+        _cp = _cp ** 2;
+        _cp *= 10**IERC20Metadata(token0).decimals();
+        _cp /= 10**IERC20Metadata(token1).decimals();
+        uint256 _cpi = _cp * 1e18 / 2**192;
+        uint256 _cpd = (_cp % 2**192) * 1e18 / 2**192;
+        return _cpi + _cpd;
+    }
+
+    /// @notice Returns the name of the Pool
+    /// @return The name of the Pool
+    function name() public view returns (string memory) {
+        return string(
+            abi.encodePacked(
+                "Thick Liquidity Pool: ",
+                IERC20Metadata(token0).name(),
+                " paired with ",
+                IERC20Metadata(token1).name()
+            )
+        );
+    }
+
+    /// @notice Returns the symbol of the Pool
+    /// @return The symbol of the Pool
+    function symbol() public view returns (string memory) {
+        return string(
+            abi.encodePacked(
+                unicode"🏋:",
+                IERC20Metadata(token0).symbol(),
+                "/",
+                IERC20Metadata(token1).symbol()
+            )
+        );
+    }
+*/
 
     /// @dev Get the pool's balance of token0
     /// @dev This function is gas optimized to avoid a redundant extcodesize check in addition to the returndatasize
@@ -269,7 +344,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     /// @inheritdoc IUniswapV3PoolActions
     /// @dev not locked because it initializes unlocked
     function initialize(uint160 sqrtPriceX96) external override {
-        require(slot0.sqrtPriceX96 == 0, 'AI');
+        require(slot0.sqrtPriceX96 == 0, 'E');
 
         int24 tick = TickMath.getTickAtSqrtRatio(sqrtPriceX96);
 
@@ -281,7 +356,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
             observationIndex: 0,
             observationCardinality: cardinality,
             observationCardinalityNext: cardinalityNext,
-            feeProtocol: 0,
+            feeProtocol: IUniswapV3Factory(factory).feeProtocol(),
             unlocked: true
         });
 
@@ -480,8 +555,8 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         if (amount0 > 0) balance0Before = balance0();
         if (amount1 > 0) balance1Before = balance1();
         IUniswapV3MintCallback(msg.sender).uniswapV3MintCallback(amount0, amount1, data);
-        if (amount0 > 0) require(balance0Before.add(amount0) <= balance0(), 'M0');
-        if (amount1 > 0) require(balance1Before.add(amount1) <= balance1(), 'M1');
+        if (amount0 > 0) require(balance0Before.add(amount0) <= balance0(), 'F');
+        if (amount1 > 0) require(balance1Before.add(amount1) <= balance1(), 'G');
 
         emit Mint(msg.sender, recipient, tickLower, tickUpper, amount, amount0, amount1);
     }
@@ -600,16 +675,16 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         uint160 sqrtPriceLimitX96,
         bytes calldata data
     ) external override noDelegateCall returns (int256 amount0, int256 amount1) {
-        require(amountSpecified != 0, 'AS');
+        require(amountSpecified != 0, 'H');
 
         Slot0 memory slot0Start = slot0;
 
-        require(slot0Start.unlocked, 'LOK');
+        require(slot0Start.unlocked, 'I');
         require(
             zeroForOne
                 ? sqrtPriceLimitX96 < slot0Start.sqrtPriceX96 && sqrtPriceLimitX96 > TickMath.MIN_SQRT_RATIO
                 : sqrtPriceLimitX96 > slot0Start.sqrtPriceX96 && sqrtPriceLimitX96 < TickMath.MAX_SQRT_RATIO,
-            'SPL'
+            'J'
         );
 
         slot0.unlocked = false;
@@ -618,7 +693,8 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
             SwapCache({
                 liquidityStart: liquidity,
                 blockTimestamp: _blockTimestamp(),
-                feeProtocol: zeroForOne ? (slot0Start.feeProtocol % 16) : (slot0Start.feeProtocol >> 4),
+                ////feeProtocol: zeroForOne ? (slot0Start.feeProtocol % 16) : (slot0Start.feeProtocol >> 4),
+                feeProtocol: slot0Start.feeProtocol,
                 secondsPerLiquidityCumulativeX128: 0,
                 tickCumulative: 0,
                 computedLatestObservation: false
@@ -680,7 +756,8 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
             // if the protocol fee is on, calculate how much is owed, decrement feeAmount, and increment protocolFee
             if (cache.feeProtocol > 0) {
-                uint256 delta = step.feeAmount / cache.feeProtocol;
+                ////uint256 delta = step.feeAmount / cache.feeProtocol;
+                uint256 delta = step.feeAmount * cache.feeProtocol / type(uint8).max;
                 step.feeAmount -= delta;
                 state.protocolFee += uint128(delta);
             }
@@ -774,13 +851,13 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
             uint256 balance0Before = balance0();
             IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(amount0, amount1, data);
-            require(balance0Before.add(uint256(amount0)) <= balance0(), 'IIA');
+            require(balance0Before.add(uint256(amount0)) <= balance0(), 'K');
         } else {
             if (amount0 < 0) TransferHelper.safeTransfer(token0, recipient, uint256(-amount0));
 
             uint256 balance1Before = balance1();
             IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(amount0, amount1, data);
-            require(balance1Before.add(uint256(amount1)) <= balance1(), 'IIA');
+            require(balance1Before.add(uint256(amount1)) <= balance1(), 'L');
         }
 
         emit Swap(msg.sender, recipient, amount0, amount1, state.sqrtPriceX96, state.liquidity, state.tick);
@@ -795,7 +872,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         bytes calldata data
     ) external override lock noDelegateCall {
         uint128 _liquidity = liquidity;
-        require(_liquidity > 0, 'L');
+        require(_liquidity > 0, 'M');
 
         uint256 fee0 = FullMath.mulDivRoundingUp(amount0, fee, 1e6);
         uint256 fee1 = FullMath.mulDivRoundingUp(amount1, fee, 1e6);
@@ -810,22 +887,24 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         uint256 balance0After = balance0();
         uint256 balance1After = balance1();
 
-        require(balance0Before.add(fee0) <= balance0After, 'F0');
-        require(balance1Before.add(fee1) <= balance1After, 'F1');
+        require(balance0Before.add(fee0) <= balance0After, 'N');
+        require(balance1Before.add(fee1) <= balance1After, 'O');
 
         // sub is safe because we know balanceAfter is gt balanceBefore by at least fee
         uint256 paid0 = balance0After - balance0Before;
         uint256 paid1 = balance1After - balance1Before;
 
         if (paid0 > 0) {
-            uint8 feeProtocol0 = slot0.feeProtocol % 16;
-            uint256 fees0 = feeProtocol0 == 0 ? 0 : paid0 / feeProtocol0;
+            ////uint8 feeProtocol0 = slot0.feeProtocol % 16;
+            uint8 feeProtocol0 = slot0.feeProtocol;
+            uint256 fees0 = feeProtocol0 == 0 ? 0 : paid0 * feeProtocol0 / type(uint8).max;
             if (uint128(fees0) > 0) protocolFees.token0 += uint128(fees0);
             feeGrowthGlobal0X128 += FullMath.mulDiv(paid0 - fees0, FixedPoint128.Q128, _liquidity);
         }
         if (paid1 > 0) {
-            uint8 feeProtocol1 = slot0.feeProtocol >> 4;
-            uint256 fees1 = feeProtocol1 == 0 ? 0 : paid1 / feeProtocol1;
+            ////uint8 feeProtocol1 = slot0.feeProtocol >> 4;
+            uint8 feeProtocol1 = slot0.feeProtocol;
+            uint256 fees1 = feeProtocol1 == 0 ? 0 : paid1 * feeProtocol1 / type(uint8).max;
             if (uint128(fees1) > 0) protocolFees.token1 += uint128(fees1);
             feeGrowthGlobal1X128 += FullMath.mulDiv(paid1 - fees1, FixedPoint128.Q128, _liquidity);
         }
@@ -834,14 +913,10 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     }
 
     /// @inheritdoc IUniswapV3PoolOwnerActions
-    function setFeeProtocol(uint8 feeProtocol0, uint8 feeProtocol1) external override lock onlyFactoryOwner {
-        require(
-            (feeProtocol0 == 0 || (feeProtocol0 >= 4 && feeProtocol0 <= 10)) &&
-                (feeProtocol1 == 0 || (feeProtocol1 >= 4 && feeProtocol1 <= 10))
-        );
+    function setFeeProtocol(uint8 feeProtocolNew) external override lock onlyFactoryOwner {
         uint8 feeProtocolOld = slot0.feeProtocol;
-        slot0.feeProtocol = feeProtocol0 + (feeProtocol1 << 4);
-        emit SetFeeProtocol(feeProtocolOld % 16, feeProtocolOld >> 4, feeProtocol0, feeProtocol1);
+        slot0.feeProtocol = feeProtocolNew;
+        emit SetFeeProtocol(feeProtocolOld, feeProtocolNew);
     }
 
     /// @inheritdoc IUniswapV3PoolOwnerActions

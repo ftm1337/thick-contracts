@@ -1,5 +1,40 @@
-// SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0 <0.8.0;
+/*
+
+
+FFFFF  TTTTTTT  M   M         GGGGG  U    U  RRRRR     U    U
+FF       TTT   M M M M       G       U    U  RR   R    U    U
+FFFFF    TTT   M  M  M      G  GGG   U    U  RRRRR     U    U
+FF       TTT   M  M  M   O  G    G   U    U  RR R      U    U
+FF       TTT   M     M       GGGGG    UUUU   RR  RRR    UUUU
+
+						Contact us at:
+			https://discord.com/invite/QpyfMarNrV
+					https://t.me/FTM1337
+
+
+	Community Mediums:
+		https://medium.com/@ftm1337
+		https://twitter.com/ftm1337
+
+
+
+
+    ▀█▀░█░█░█░█▀░█▄▀
+    ░█░░█▀█░█░█▄░█▀▄
+
+	Thick Liquidity Protocol
+	> Network agnostic Decentralized Exchange for ERC20 tokens
+
+
+   Contributors:
+    -   543#3017 (Sam, @i543), ftm.guru, Eliteness.network
+
+
+  SPDX-License-Identifier: UNLICENSED
+
+*/
+
+pragma solidity 0.7.6;
 
 /// @title Oracle
 /// @notice Provides price and liquidity data useful for a wide variety of system designs

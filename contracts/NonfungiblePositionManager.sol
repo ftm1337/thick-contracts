@@ -1,15 +1,51 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity =0.7.6;
+/*
+
+
+FFFFF  TTTTTTT  M   M         GGGGG  U    U  RRRRR     U    U
+FF       TTT   M M M M       G       U    U  RR   R    U    U
+FFFFF    TTT   M  M  M      G  GGG   U    U  RRRRR     U    U
+FF       TTT   M  M  M   O  G    G   U    U  RR R      U    U
+FF       TTT   M     M       GGGGG    UUUU   RR  RRR    UUUU
+
+						Contact us at:
+			https://discord.com/invite/QpyfMarNrV
+					https://t.me/FTM1337
+
+
+	Community Mediums:
+		https://medium.com/@ftm1337
+		https://twitter.com/ftm1337
+
+
+
+
+    ▀█▀░█░█░█░█▀░█▄▀
+    ░█░░█▀█░█░█▄░█▀▄
+
+	Thick Liquidity Protocol
+	> Network agnostic Decentralized Exchange for ERC20 tokens
+
+
+   Contributors:
+    -   543#3017 (Sam, @i543), ftm.guru, Eliteness.network
+
+
+  SPDX-License-Identifier: UNLICENSED
+
+*/
+
+pragma solidity 0.7.6;
 pragma abicoder v2;
 
-import '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
-import '@uniswap/v3-core/contracts/libraries/FixedPoint128.sol';
-import '@uniswap/v3-core/contracts/libraries/FullMath.sol';
-
+import './interfaces/IUniswapV3Pool.sol';
 import './interfaces/INonfungiblePositionManager.sol';
 import './interfaces/INonfungibleTokenPositionDescriptor.sol';
+
+import './libraries/FixedPoint128.sol';
+import './libraries/FullMath.sol';
 import './libraries/PositionKey.sol';
 import './libraries/PoolAddress.sol';
+
 import './base/LiquidityManagement.sol';
 import './base/PeripheryImmutableState.sol';
 import './base/Multicall.sol';
@@ -72,7 +108,7 @@ contract NonfungiblePositionManager is
         address _factory,
         address _WETH9,
         address _tokenDescriptor_
-    ) ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1') PeripheryImmutableState(_factory, _WETH9) {
+    ) ERC721Permit('Thick Liquidity', 'THICK', '1') PeripheryImmutableState(_factory, _WETH9) {
         _tokenDescriptor = _tokenDescriptor_;
     }
 

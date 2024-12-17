@@ -1,11 +1,45 @@
-// SPDX-License-Identifier: BUSL-1.1
-pragma solidity =0.7.6;
+/*
+
+
+FFFFF  TTTTTTT  M   M         GGGGG  U    U  RRRRR     U    U
+FF       TTT   M M M M       G       U    U  RR   R    U    U
+FFFFF    TTT   M  M  M      G  GGG   U    U  RRRRR     U    U
+FF       TTT   M  M  M   O  G    G   U    U  RR R      U    U
+FF       TTT   M     M       GGGGG    UUUU   RR  RRR    UUUU
+
+						Contact us at:
+			https://discord.com/invite/QpyfMarNrV
+					https://t.me/FTM1337
+
+
+	Community Mediums:
+		https://medium.com/@ftm1337
+		https://twitter.com/ftm1337
+
+
+
+
+    ▀█▀░█░█░█░█▀░█▄▀
+    ░█░░█▀█░█░█▄░█▀▄
+
+	Thick Liquidity Protocol
+	> Network agnostic Decentralized Exchange for ERC20 tokens
+
+
+   Contributors:
+    -   543#3017 (Sam, @i543), ftm.guru, Eliteness.network
+
+
+  SPDX-License-Identifier: UNLICENSED
+
+*/
+
+pragma solidity 0.7.6;
 
 import './interfaces/IUniswapV3Factory.sol';
 
 import './UniswapV3PoolDeployer.sol';
 import './NoDelegateCall.sol';
-
 import './UniswapV3Pool.sol';
 
 /// @title Canonical Uniswap V3 factory
@@ -13,16 +47,21 @@ import './UniswapV3Pool.sol';
 contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegateCall {
     /// @inheritdoc IUniswapV3Factory
     address public override owner;
-
     /// @inheritdoc IUniswapV3Factory
     mapping(uint24 => int24) public override feeAmountTickSpacing;
     /// @inheritdoc IUniswapV3Factory
     mapping(address => mapping(address => mapping(uint24 => address))) public override getPool;
+    /// @inheritdoc IUniswapV3Factory
+    address[] public override allPairs;
+    /// @inheritdoc IUniswapV3Factory
+    uint8 public override feeProtocol = 27; // 15=5%, 27=10%
 
     constructor() {
         owner = msg.sender;
         emit OwnerChanged(address(0), msg.sender);
 
+        feeAmountTickSpacing[100] = 1;
+        emit FeeAmountEnabled(100, 1);
         feeAmountTickSpacing[500] = 10;
         emit FeeAmountEnabled(500, 10);
         feeAmountTickSpacing[3000] = 60;
@@ -31,6 +70,16 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         emit FeeAmountEnabled(10000, 200);
     }
 
+    /// @inheritdoc IUniswapV3Factory
+    function POOL_INIT_CODE_HASH() external override pure returns (bytes32) {
+        return keccak256(type(UniswapV3Pool).creationCode);
+    }
+/*
+    /// @inheritdoc IUniswapV3Factory
+    function allPairsLength() external override view returns (uint) {
+        return allPairs.length;
+    }
+*/
     /// @inheritdoc IUniswapV3Factory
     function createPool(
         address tokenA,
@@ -47,6 +96,7 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         getPool[token0][token1][fee] = pool;
         // populate mapping in the reverse direction, deliberate choice to avoid the cost of comparing addresses
         getPool[token1][token0][fee] = pool;
+        allPairs.push(pool);
         emit PoolCreated(token0, token1, fee, tickSpacing, pool);
     }
 
@@ -69,5 +119,11 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
 
         feeAmountTickSpacing[fee] = tickSpacing;
         emit FeeAmountEnabled(fee, tickSpacing);
+    }
+
+    /// @inheritdoc IUniswapV3Factory
+    function setFeeProtocol(uint8 fee) external override {
+        require(msg.sender == owner);
+        feeProtocol = fee;
     }
 }
