@@ -47,19 +47,35 @@ import './UniswapV3Pool.sol';
 contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegateCall {
     /// @inheritdoc IUniswapV3Factory
     address public override owner;
+
+/*
     /// @inheritdoc IUniswapV3Factory
     mapping(uint24 => int24) public override feeAmountTickSpacing;
+*/
+
+    /// @inheritdoc IUniswapV3Factory
+    mapping(int24 => bool) public override enabledTickSpacing;
+
+/*
     /// @inheritdoc IUniswapV3Factory
     mapping(address => mapping(address => mapping(uint24 => address))) public override getPool;
+*/
+    /// @inheritdoc IUniswapV3Factory
+    mapping(address => mapping(address => mapping(int24 => address))) public override getPool;
     /// @inheritdoc IUniswapV3Factory
     address[] public override allPairs;
     /// @inheritdoc IUniswapV3Factory
-    uint8 public override feeProtocol = 27; // 15=5%, 27=10%
+    uint8 public override feeProtocol = 27; // %=f/255; 15=5%, 27=10%
 
     constructor() {
         owner = msg.sender;
         emit OwnerChanged(address(0), msg.sender);
+        enabledTickSpacing[1] = true;
+        enabledTickSpacing[50] = true;
+        enabledTickSpacing[100] = true;
+        enabledTickSpacing[200] = true;
 
+		/*
         feeAmountTickSpacing[100] = 1;
         emit FeeAmountEnabled(100, 1);
         feeAmountTickSpacing[500] = 10;
@@ -68,36 +84,42 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         emit FeeAmountEnabled(3000, 60);
         feeAmountTickSpacing[10000] = 200;
         emit FeeAmountEnabled(10000, 200);
+        */
     }
 
     /// @inheritdoc IUniswapV3Factory
     function POOL_INIT_CODE_HASH() external override pure returns (bytes32) {
         return keccak256(type(UniswapV3Pool).creationCode);
     }
-/*
+
     /// @inheritdoc IUniswapV3Factory
     function allPairsLength() external override view returns (uint) {
         return allPairs.length;
     }
-*/
+
     /// @inheritdoc IUniswapV3Factory
     function createPool(
         address tokenA,
         address tokenB,
-        uint24 fee
+        int24 tickSpacing
     ) external override noDelegateCall returns (address pool) {
         require(tokenA != tokenB);
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0));
-        int24 tickSpacing = feeAmountTickSpacing[fee];
+        ///int24 tickSpacing = feeAmountTickSpacing[fee];
+        require(enabledTickSpacing[tickSpacing]);
         require(tickSpacing != 0);
-        require(getPool[token0][token1][fee] == address(0));
-        pool = deploy(address(this), token0, token1, fee, tickSpacing);
-        getPool[token0][token1][fee] = pool;
-        // populate mapping in the reverse direction, deliberate choice to avoid the cost of comparing addresses
-        getPool[token1][token0][fee] = pool;
+        require(getPool[token0][token1][tickSpacing] == address(0));
+        ///pool = deploy(address(this), token0, token1, fee, tickSpacing);
+        /// let fee = 10000 by default;
+        pool = deploy(address(this), token0, token1, 10000, tickSpacing);
+        // populate mapping in the both directions, deliberate choice to avoid the cost of comparing addresses
+        getPool[token0][token1][tickSpacing] = pool;
+        getPool[token1][token0][tickSpacing] = pool;
         allPairs.push(pool);
-        emit PoolCreated(token0, token1, fee, tickSpacing, pool);
+        ///emit PoolCreated(token0, token1, fee, tickSpacing, pool);
+        /// let fee = 10000 by default;
+        emit PoolCreated(token0, token1, 10000, tickSpacing, pool);
     }
 
     /// @inheritdoc IUniswapV3Factory
@@ -107,6 +129,7 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         owner = _owner;
     }
 
+	/*
     /// @inheritdoc IUniswapV3Factory
     function enableFeeAmount(uint24 fee, int24 tickSpacing) public override {
         require(msg.sender == owner);
@@ -119,6 +142,13 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
 
         feeAmountTickSpacing[fee] = tickSpacing;
         emit FeeAmountEnabled(fee, tickSpacing);
+    }
+    */
+
+    function enableTickSpacing(int24 ts, bool state) public {
+        require(msg.sender == owner);
+        enabledTickSpacing[ts] = state;
+        emit tickSpacingEnabled(ts, state);
     }
 
     /// @inheritdoc IUniswapV3Factory

@@ -7,6 +7,11 @@ interface IUniswapV3PoolOwnerActions {
     /// @notice Set the denominator of the protocol's % share of the fees
     /// @param feeProtocolNew new protocol fee for token0 & token1 of the pool
     function setFeeProtocol(uint8 feeProtocolNew) external;
+/*
+    /// @notice Set the denominator of the protocol's % share of the fees
+    /// @param feeNew new protocol fee for token0 & token1 of the pool
+    function setSwapFee(uint24 feeNew) external;
+*/
 
     /// @notice Collect the protocol fee accrued to the pool
     /// @param recipient The address to which collected protocol fees should be sent

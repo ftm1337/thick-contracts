@@ -28,7 +28,7 @@ interface IMixedRouteQuoterV1 {
         address tokenIn;
         address tokenOut;
         uint256 amountIn;
-        uint24 fee;
+        int24 tickSpacing;
         uint160 sqrtPriceLimitX96;
     }
 

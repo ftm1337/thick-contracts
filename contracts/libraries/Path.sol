@@ -38,18 +38,18 @@ library Path {
     /// @param path The bytes encoded swap path
     /// @return tokenA The first token of the given pool
     /// @return tokenB The second token of the given pool
-    /// @return fee The fee level of the pool
+    /// @return tickSpacing The tickSpacing level of the pool
     function decodeFirstPool(bytes memory path)
         internal
         pure
         returns (
             address tokenA,
             address tokenB,
-            uint24 fee
+            int24 tickSpacing
         )
     {
         tokenA = path.toAddress(0);
-        fee = path.toUint24(ADDR_SIZE);
+        tickSpacing = int24(int(path.toUint24(ADDR_SIZE)));
         tokenB = path.toAddress(NEXT_OFFSET);
     }
 

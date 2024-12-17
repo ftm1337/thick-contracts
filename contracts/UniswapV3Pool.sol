@@ -80,8 +80,11 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     address public immutable override token0;
     /// @inheritdoc IUniswapV3PoolImmutables
     address public immutable override token1;
-    /// @inheritdoc IUniswapV3PoolImmutables
-    uint24 public immutable override fee;
+
+
+    /// @inheritdoc IUniswapV3PoolState
+    uint24 public override fee;
+
 
     /// @inheritdoc IUniswapV3PoolImmutables
     int24 public immutable override tickSpacing;
@@ -170,6 +173,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         return uint32(block.timestamp); // truncation is desired
     }
 
+
 /*
     /// @dev Get the  current price of token0 in terms of token1 in 18-digit precision
     function totalSupply() public view returns (uint256) {
@@ -195,6 +199,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         );
     }
 
+
     /// @notice Returns the symbol of the Pool
     /// @return The symbol of the Pool
     function symbol() public view returns (string memory) {
@@ -208,7 +213,6 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         );
     }
 */
-
     /// @dev Get the pool's balance of token0
     /// @dev This function is gas optimized to avoid a redundant extcodesize check in addition to the returndatasize
     /// check
@@ -912,19 +916,27 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         emit Flash(msg.sender, recipient, amount0, amount1, paid0, paid1);
     }
 
-    /// @inheritdoc IUniswapV3PoolOwnerActions
-    function setFeeProtocol(uint8 feeProtocolNew) external override lock onlyFactoryOwner {
-        uint8 feeProtocolOld = slot0.feeProtocol;
+    /// inheritdoc IUniswapV3PoolOwnerActions
+    function setFeeProtocol(uint8 feeProtocolNew) external  lock onlyFactoryOwner {
+        //uint8 feeProtocolOld = slot0.feeProtocol;
         slot0.feeProtocol = feeProtocolNew;
-        emit SetFeeProtocol(feeProtocolOld, feeProtocolNew);
+        //emit SetFeeProtocol(feeProtocolOld, feeProtocolNew);
     }
 
-    /// @inheritdoc IUniswapV3PoolOwnerActions
+    /// inheritdoc IUniswapV3PoolOwnerActions
+    function setSwapFee(uint24 feeNew) external lock onlyFactoryOwner {
+        require(feeNew < 1e6 && feeNew > 1);
+        //uint24 feeOld = fee;
+        fee = feeNew;
+        //emit SetSwapFee(feeOld, feeNew);
+    }
+
+    /// inheritdoc IUniswapV3PoolOwnerActions
     function collectProtocol(
         address recipient,
         uint128 amount0Requested,
         uint128 amount1Requested
-    ) external override lock onlyFactoryOwner returns (uint128 amount0, uint128 amount1) {
+    ) external  lock onlyFactoryOwner returns (uint128 amount0, uint128 amount1) {
         amount0 = amount0Requested > protocolFees.token0 ? protocolFees.token0 : amount0Requested;
         amount1 = amount1Requested > protocolFees.token1 ? protocolFees.token1 : amount1Requested;
 

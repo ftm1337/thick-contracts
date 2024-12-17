@@ -72,7 +72,7 @@ contract NonfungiblePositionManager is
         uint96 nonce;
         // the address that is approved for spending this token
         address operator;
-        // the ID of the pool with which this token is connected
+        // the ID of the pool with which this NFP is connected
         uint80 poolId;
         // the tick range of the position
         int24 tickLower;
@@ -108,7 +108,7 @@ contract NonfungiblePositionManager is
         address _factory,
         address _WETH9,
         address _tokenDescriptor_
-    ) ERC721Permit('Thick Liquidity', 'THICK', '1') PeripheryImmutableState(_factory, _WETH9) {
+    ) ERC721Permit('Thick Liquidity', 'THICK', '2') PeripheryImmutableState(_factory, _WETH9) {
         _tokenDescriptor = _tokenDescriptor_;
     }
 
@@ -122,7 +122,7 @@ contract NonfungiblePositionManager is
             address operator,
             address token0,
             address token1,
-            uint24 fee,
+            int24 tickSpacing,
             int24 tickLower,
             int24 tickUpper,
             uint128 liquidity,
@@ -140,7 +140,7 @@ contract NonfungiblePositionManager is
             position.operator,
             poolKey.token0,
             poolKey.token1,
-            poolKey.fee,
+            poolKey.tickSpacing,
             position.tickLower,
             position.tickUpper,
             position.liquidity,
@@ -178,7 +178,7 @@ contract NonfungiblePositionManager is
             AddLiquidityParams({
                 token0: params.token0,
                 token1: params.token1,
-                fee: params.fee,
+                tickSpacing: params.tickSpacing,
                 recipient: address(this),
                 tickLower: params.tickLower,
                 tickUpper: params.tickUpper,
@@ -198,7 +198,7 @@ contract NonfungiblePositionManager is
         uint80 poolId =
             cachePoolKey(
                 address(pool),
-                PoolAddress.PoolKey({token0: params.token0, token1: params.token1, fee: params.fee})
+                PoolAddress.PoolKey({token0: params.token0, token1: params.token1, tickSpacing: params.tickSpacing})
             );
 
         _positions[tokenId] = Position({
@@ -251,7 +251,7 @@ contract NonfungiblePositionManager is
             AddLiquidityParams({
                 token0: poolKey.token0,
                 token1: poolKey.token1,
-                fee: poolKey.fee,
+                tickSpacing: poolKey.tickSpacing,
                 tickLower: position.tickLower,
                 tickUpper: position.tickUpper,
                 amount0Desired: params.amount0Desired,

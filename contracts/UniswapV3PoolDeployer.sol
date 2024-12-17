@@ -67,7 +67,8 @@ contract UniswapV3PoolDeployer is IUniswapV3PoolDeployer {
         int24 tickSpacing
     ) internal returns (address pool) {
         parameters = Parameters({factory: factory, token0: token0, token1: token1, fee: fee, tickSpacing: tickSpacing});
-        pool = address(new UniswapV3Pool{salt: keccak256(abi.encode(token0, token1, fee))}());
+        // salt hash based on tickSpacing (constant) instead of on fees (variable)
+        pool = address(new UniswapV3Pool{salt: keccak256(abi.encode(token0, token1, tickSpacing))}());
         // transient storage (write & flush in a flash) doesnt cost much gas
         delete parameters;
     }

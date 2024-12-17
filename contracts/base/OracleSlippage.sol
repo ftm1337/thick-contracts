@@ -50,9 +50,9 @@ abstract contract OracleSlippage is IOracleSlippage, PeripheryImmutableState, Bl
     function getPoolAddress(
         address tokenA,
         address tokenB,
-        uint24 fee
+        int24 tickSpacing
     ) internal view virtual returns (IUniswapV3Pool pool) {
-        pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, fee)));
+        pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, tickSpacing)));
     }
 
     /// @dev Returns the synthetic time-weighted average tick as of secondsAgo, as well as the current tick,
@@ -69,8 +69,8 @@ abstract contract OracleSlippage is IOracleSlippage, PeripheryImmutableState, Bl
         address previousTokenIn;
         for (uint256 i = 0; i < numPools; i++) {
             // this assumes the path is sorted in swap order
-            (address tokenIn, address tokenOut, uint24 fee) = path.decodeFirstPool();
-            IUniswapV3Pool pool = getPoolAddress(tokenIn, tokenOut, fee);
+            (address tokenIn, address tokenOut, int24 tickSpacing) = path.decodeFirstPool();
+            IUniswapV3Pool pool = getPoolAddress(tokenIn, tokenOut, tickSpacing);
 
             // get the average and current ticks for the current pool
             int256 averageTick;

@@ -86,14 +86,14 @@ contract NonfungibleTokenPositionDescriptor is INonfungibleTokenPositionDescript
         override
         returns (string memory)
     {
-        (, , address token0, address token1, uint24 fee, int24 tickLower, int24 tickUpper, , , , , ) =
+        (, , address token0, address token1, int24 tickSpacing, int24 tickLower, int24 tickUpper, , , , , ) =
             positionManager.positions(tokenId);
 
         IUniswapV3Pool pool =
             IUniswapV3Pool(
                 PoolAddress.computeAddress(
                     positionManager.factory(),
-                    PoolAddress.PoolKey({token0: token0, token1: token1, fee: fee})
+                    PoolAddress.PoolKey({token0: token0, token1: token1, tickSpacing: tickSpacing})
                 )
             );
 
@@ -120,8 +120,8 @@ contract NonfungibleTokenPositionDescriptor is INonfungibleTokenPositionDescript
                     tickLower: tickLower,
                     tickUpper: tickUpper,
                     tickCurrent: tick,
-                    tickSpacing: pool.tickSpacing(),
-                    fee: fee,
+                    tickSpacing: tickSpacing,
+                    fee: pool.fee(),
                     poolAddress: address(pool)
                 })
             );
@@ -139,6 +139,7 @@ contract NonfungibleTokenPositionDescriptor is INonfungibleTokenPositionDescript
         if (token == WETH9) {
             return TokenRatioSortOrder.DENOMINATOR;
         }
+        /*
         if (chainId == 1) {
             if (token == USDC) {
                 return TokenRatioSortOrder.NUMERATOR_MOST;
@@ -154,6 +155,7 @@ contract NonfungibleTokenPositionDescriptor is INonfungibleTokenPositionDescript
                 return 0;
             }
         }
+        */
         return 0;
     }
 }

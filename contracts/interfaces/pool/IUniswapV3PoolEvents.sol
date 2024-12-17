@@ -110,6 +110,11 @@ interface IUniswapV3PoolEvents {
     /// @param feeProtocolNew The updated value of the token1 protocol fee
     event SetFeeProtocol(uint8 feeProtocolOld, uint8 feeProtocolNew);
 
+    /// @notice Emitted when the protocol fee is changed by the pool
+    /// @param feeOld The previous value of the token0 protocol fee
+    /// @param feeNew The updated value of the token1 protocol fee
+    event SetSwapFee(uint24 feeOld, uint24 feeNew);
+
     /// @notice Emitted when the collected protocol fees are withdrawn by the factory owner
     /// @param sender The address that collects the protocol fees
     /// @param recipient The address that receives the collected protocol fees

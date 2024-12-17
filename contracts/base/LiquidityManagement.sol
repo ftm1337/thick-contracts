@@ -37,7 +37,7 @@ abstract contract LiquidityManagement is IUniswapV3MintCallback, PeripheryImmuta
     struct AddLiquidityParams {
         address token0;
         address token1;
-        uint24 fee;
+        int24 tickSpacing;
         address recipient;
         int24 tickLower;
         int24 tickUpper;
@@ -58,7 +58,7 @@ abstract contract LiquidityManagement is IUniswapV3MintCallback, PeripheryImmuta
         )
     {
         PoolAddress.PoolKey memory poolKey =
-            PoolAddress.PoolKey({token0: params.token0, token1: params.token1, fee: params.fee});
+            PoolAddress.PoolKey({token0: params.token0, token1: params.token1, tickSpacing: params.tickSpacing});
 
         pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
 

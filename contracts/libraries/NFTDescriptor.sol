@@ -43,7 +43,7 @@ library NFTDescriptor {
     }
 
     function constructTokenURI(ConstructTokenURIParams memory params) public pure returns (string memory) {
-        string memory name = generateName(params, feeToPercentString(params.fee));
+        string memory name = generateName(params, tickSpacingToPercentString(params.tickSpacing));
         string memory descriptionPartOne =
             generateDescriptionPartOne(
                 escapeQuotes(params.quoteTokenSymbol),
@@ -153,7 +153,7 @@ library NFTDescriptor {
             );
     }
 
-    function generateName(ConstructTokenURIParams memory params, string memory feeTier)
+    function generateName(ConstructTokenURIParams memory params, string memory _tickSpacing)
         private
         pure
         returns (string memory)
@@ -161,8 +161,8 @@ library NFTDescriptor {
         return
             string(
                 abi.encodePacked(
-                    'Uniswap - ',
-                    feeTier,
+                    'Thick v2 - ',
+                    _tickSpacing,
                     ' - ',
                     escapeQuotes(params.quoteTokenSymbol),
                     '/',
@@ -355,6 +355,13 @@ library NFTDescriptor {
         params.isPercent = false;
 
         return generateDecimalString(params);
+    }
+
+    // @notice Returns string as decimal percentage of tickSpacing.
+    // @param tickSpacing tickSpacing of pool
+    // @dev tickSpacing is in basis points, while fee is in 1/100th of basis points
+    function tickSpacingToPercentString(int24 tickSpacing) internal pure returns (string memory) {
+    	return feeToPercentString(uint24(tickSpacing) * 100);
     }
 
     // @notice Returns string as decimal percentage of fee amount.

@@ -10,7 +10,7 @@ interface IV3SwapRouter is IUniswapV3SwapCallback {
     struct ExactInputSingleParams {
         address tokenIn;
         address tokenOut;
-        uint24 fee;
+        int24 tickSpacing;
         address recipient;
         uint256 amountIn;
         uint256 amountOutMinimum;
@@ -41,7 +41,7 @@ interface IV3SwapRouter is IUniswapV3SwapCallback {
     struct ExactOutputSingleParams {
         address tokenIn;
         address tokenOut;
-        uint24 fee;
+        int24 tickSpacing;
         address recipient;
         uint256 amountOut;
         uint256 amountInMaximum;

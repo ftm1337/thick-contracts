@@ -48,9 +48,9 @@ contract MixedRouteQuoterV1 is IMixedRouteQuoterV1, IUniswapV3SwapCallback, Peri
     function getPool(
         address tokenA,
         address tokenB,
-        uint24 fee
+        int24 tickSpacing
     ) private view returns (IUniswapV3Pool) {
-        return IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, fee)));
+        return IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, tickSpacing)));
     }
 
     /// @dev Given an amountIn, fetch the reserves of the V2 pair and get the amountOut
@@ -70,15 +70,15 @@ contract MixedRouteQuoterV1 is IMixedRouteQuoterV1, IUniswapV3SwapCallback, Peri
         bytes memory path
     ) external view override {
         require(amount0Delta > 0 || amount1Delta > 0); // swaps entirely within 0-liquidity regions are not supported
-        (address tokenIn, address tokenOut, uint24 fee) = path.decodeFirstPool();
-        CallbackValidation.verifyCallback(factory, tokenIn, tokenOut, fee);
+        (address tokenIn, address tokenOut, int24 tickSpacing) = path.decodeFirstPool();
+        CallbackValidation.verifyCallback(factory, tokenIn, tokenOut, tickSpacing);
 
         (bool isExactInput, uint256 amountReceived) =
             amount0Delta > 0
                 ? (tokenIn < tokenOut, uint256(-amount1Delta))
                 : (tokenOut < tokenIn, uint256(-amount0Delta));
 
-        IUniswapV3Pool pool = getPool(tokenIn, tokenOut, fee);
+        IUniswapV3Pool pool = getPool(tokenIn, tokenOut, tickSpacing);
         (uint160 v3SqrtPriceX96After, int24 tickAfter, , , , , ) = pool.slot0();
 
         if (isExactInput) {
@@ -151,7 +151,7 @@ contract MixedRouteQuoterV1 is IMixedRouteQuoterV1, IUniswapV3SwapCallback, Peri
         )
     {
         bool zeroForOne = params.tokenIn < params.tokenOut;
-        IUniswapV3Pool pool = getPool(params.tokenIn, params.tokenOut, params.fee);
+        IUniswapV3Pool pool = getPool(params.tokenIn, params.tokenOut, params.tickSpacing);
 
         uint256 gasBefore = gasleft();
         try
@@ -162,7 +162,7 @@ contract MixedRouteQuoterV1 is IMixedRouteQuoterV1, IUniswapV3SwapCallback, Peri
                 params.sqrtPriceLimitX96 == 0
                     ? (zeroForOne ? TickMath.MIN_SQRT_RATIO + 1 : TickMath.MAX_SQRT_RATIO - 1)
                     : params.sqrtPriceLimitX96,
-                abi.encodePacked(params.tokenIn, params.fee, params.tokenOut)
+                abi.encodePacked(params.tokenIn, params.tickSpacing, params.tokenOut)
             )
         {} catch (bytes memory reason) {
             gasEstimate = gasBefore - gasleft();
@@ -197,9 +197,9 @@ contract MixedRouteQuoterV1 is IMixedRouteQuoterV1, IUniswapV3SwapCallback, Peri
 
         uint256 i = 0;
         while (true) {
-            (address tokenIn, address tokenOut, uint24 fee) = path.decodeFirstPool();
+            (address tokenIn, address tokenOut, int24 tickSpacing) = path.decodeFirstPool();
 
-            if (fee & flagBitmask != 0) {
+            if (uint24(tickSpacing) & flagBitmask != 0) {
                 amountIn = quoteExactInputSingleV2(
                     QuoteExactInputSingleV2Params({tokenIn: tokenIn, tokenOut: tokenOut, amountIn: amountIn})
                 );
@@ -215,7 +215,7 @@ contract MixedRouteQuoterV1 is IMixedRouteQuoterV1, IUniswapV3SwapCallback, Peri
                         QuoteExactInputSingleV3Params({
                             tokenIn: tokenIn,
                             tokenOut: tokenOut,
-                            fee: fee,
+                            tickSpacing: tickSpacing,
                             amountIn: amountIn,
                             sqrtPriceLimitX96: 0
                         })
